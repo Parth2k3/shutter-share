@@ -1,0 +1,445 @@
+{% load static %}
+<!-- Navbar -->
+<link rel="stylesheet" href="{% static 'css/nav.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+<style>
+    #imagePreviews img, #croppedImagesContainer img {
+    max-width: 100%; /* Ensures the image doesn't exceed the container's width */
+    max-height: 150px; /* Controls the height to fit within the modal */
+    margin-bottom: 10px; /* Adds some space between images */
+    display: block;
+    margin-left: auto;
+    margin-right: auto; /* Center the image */
+}
+@media (min-width: 767px){
+        .mini-search{
+            display: none;
+        }
+        .mini-inp{
+            display: none;
+        }
+        .navbar-drop{
+            display: none;
+        }
+    }
+
+</style>
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top" style="background-color: #91b9ff7c !important; border-bottom-left-radius: 5%; border-bottom-right-radius: 5%;">
+    <!-- Container wrapper -->
+    <div class="container">
+      <!-- Navbar brand -->
+      <div class="navbar-content d-flex align-items-center">
+        <!-- Logo -->
+        <a class="navbar-brand" style="margin-left: -50px;" href="/">
+          <img id="MDB-logo" src="{% static 'media/logo-png-crop.png' %}" alt="ShutterShare Logo"
+            draggable="false" height="30" />
+        </a>
+      
+        <!-- Search Input and Button -->
+        <div class="mini-inp d-flex align-items-center">
+          <input type="search" id="search-input" class="form-control mini-inp" aria-label="Text input with dropdown button" placeholder="Find what you like ...">
+          <a id="search-button" href="#" class="text-white mini-search" style="padding-left: 10px;">
+            <i class="fas fa-search"></i>
+          </a>
+        </div>
+      
+        <!-- User Dropdown Menu -->
+        <div class="dropdown navbar-drop" style="margin-left: 80px !important;">
+          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background-color: transparent !important; border: none !important;">
+            <img src="{{request.user.user_pic.url}}" alt="DP" class="rounded-circle" width="30" height="30">
+          </button>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+            <button class="btn btn-primary dropdown-item" style="color: white; background-color: rgb(96, 96, 212) !important;" data-bs-toggle="modal" data-bs-target="#createPostModal">Create</button>
+            <a class="dropdown-item" href="/profile/{{request.user.username}}">Profile</a>
+            <a class="dropdown-item" href="/followers">People</a>
+            <a class="dropdown-item" href="/logout">Logout</a>
+          </div>
+        </div>
+      </div>
+      
+  
+      <!-- Collapsible wrapper -->
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <div class="input-group" style="padding-left: 12.7rem;">
+            
+            <input type="search" id="search-input" class="form-control" aria-label="Text input with dropdown button" placeholder="Find what you like ...">
+          </div>
+          <a id="search-button-main" href="#" class="text-white" style="padding-left: 5px;"><i class="fas fa-search ps-3"></i></a>
+        <div style="margin-right: -60px; padding-left: 295px;">
+        <ul class="navbar-nav ms-3">
+          <li class="nav-item me-3">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createPostModal">Create</button>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link d-flex align-items-center me-3" href="/followers">
+              <i class="fas fa-users pe-2"></i> People
+            </a>
+          </li>
+          <li>
+            <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background-color: transparent !important; border: none !important;">
+                  <img src="{{request.user.user_pic.url}}" alt="DP" class="rounded-circle" width="30" height="30">
+              </button>
+              <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                  <a class="dropdown-item" href="/profile/{{request.user.username}}">Profile</a>
+                  <a class="dropdown-item" href="/dash">My Uploads</a>
+                  <a class="dropdown-item" href="/logout">Logout</a>
+              </div>
+          </div>
+          </li>
+        </ul>
+      </div>
+      </div>
+    </div>
+  </nav>
+  <div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createPostModalLabel">Create a Post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createPostForm" class="create-post-form" action="{% url 'create_post' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="postTitle" class="form-label">Title</label>
+                        <input type="text" name="title" class="form-control" id="postTitle" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="postImages" class="form-label">Images</label>
+                        <input type="file" name="image" class="form-control" id="postImages" multiple>
+                    </div>
+                    <div id="imagePreviewContainer" style="display:none;">
+                        <label for="imagePreview" class="form-label">Crop Images</label>
+                        <div id="imagePreviews"></div> <!-- Container for multiple images -->
+                        <button type="button" class="btn btn-primary mt-2" id="cropButton">Crop Selected Images</button>
+                    </div>
+                    <button type="button" class="btn btn-secondary mt-2 mb-2" id="resetButton">Reset</button>
+                    <div id="croppedImagesContainer"></div>
+                    <div class="mb-3">
+                        <label for="postDescription" class="form-label">Description</label>
+                        <textarea class="form-control" name="desc" id="postDescription" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fruits">Topics</label>
+                        <select id="fruits" name="tags[]" multiple data-multi-select>
+                            <option value="self_portraits">Self Portraits</option>
+                            <option value="art">Art</option>
+                            <option value="fashion_style">Fashion Style</option>
+                            <option value="products">Products</option>
+                            <option value="creative_projects">Creative Projects</option>
+                            <option value="events">Events</option>
+                            <option value="photography_techniques">Photography Techniques</option>
+                            <option value="themes_challenges">Themes & Challenges</option>
+                            <option value="inspiration_ideas">Inspiration & Ideas</option>
+                            <option value="comparisons">Comparisons</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="postPrivacy" class="form-label">Privacy</label>
+                        <select class="form-select" id="postPrivacy" name="privacy" required>
+                            <option value="public">Public</option>
+                            <option value="followers">Followers</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Create Post</button>
+                    </div>
+                </form>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const choices = new Choices('#fruits', {
+      removeItemButton: true,
+      searchResultLimit: 5,
+      renderChoiceLimit: 10
+  });
+});
+
+
+document.getElementById('postImages').addEventListener('change', function(event) {
+    const imagePreviewsContainer = document.getElementById('imagePreviews');
+    const croppedImagesContainer = document.getElementById('croppedImagesContainer');
+    const files = event.target.files;
+
+    // Clear previous images and remove existing crop button event listeners
+    imagePreviewsContainer.innerHTML = '';
+    croppedImagesContainer.innerHTML = '';
+    document.getElementById('cropButton').removeEventListener('click', cropImages);
+    if (files && files.length > 0) {
+        Array.from(files).forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgWrapper = document.createElement('div');
+                imgWrapper.style.marginBottom = '10px';
+                imgWrapper.style.position = 'relative';
+
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.maxWidth = '100%';
+                img.setAttribute('data-index', index);
+
+                const removeButton = document.createElement('button');
+                removeButton.textContent = 'Remove';
+                removeButton.style.position = 'absolute';
+                removeButton.style.top = '5px';
+                removeButton.style.right = '5px';
+                removeButton.classList.add('btn', 'btn-danger', 'btn-sm');
+
+                removeButton.addEventListener('click', function() {
+                    // Destroy the cropper instance
+                    if (img.cropper) {
+                        img.cropper.destroy();
+                    }
+                    // Remove the image wrapper
+                    imagePreviewsContainer.removeChild(imgWrapper);
+                });
+
+                imgWrapper.appendChild(img);
+                imgWrapper.appendChild(removeButton);
+                imagePreviewsContainer.appendChild(imgWrapper);
+
+                const cropper = new Cropper(img, {
+                    aspectRatio: 16 / 9, // Set landscape aspect ratio (16:9)
+                    viewMode: 1,
+                });
+
+                img.cropper = cropper;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('imagePreviewContainer').style.display = 'block';
+
+        // Reattach the crop button event listener
+        document.getElementById('cropButton').addEventListener('click', cropImages);
+    }
+
+    function cropImages() {
+        const imageElements = document.getElementById('imagePreviews').querySelectorAll('img');
+
+        function cropImage(index) {
+            if (index >= imageElements.length) {
+                // All images have been processed
+                document.getElementById('imagePreviewContainer').style.display = 'none';
+                return;
+            }
+
+            const img = imageElements[index];
+            const cropper = img.cropper;
+            
+            if (cropper) {
+                cropper.getCroppedCanvas().toBlob(function(blob) {
+                    const reader = new FileReader();
+                    reader.onloadend = function() {
+                        const base64data = reader.result;  // This will be the Base64 string with metadata
+                        const imgWrapper = document.createElement('div');
+                        imgWrapper.style.marginBottom = '10px';
+                        imgWrapper.style.position = 'relative';
+
+                        const croppedImg = document.createElement('img');
+                        croppedImg.src = base64data;  // This will display the cropped image in the container
+                        croppedImg.style.maxWidth = '100%';
+
+                        const removeButton = document.createElement('button');
+                        removeButton.textContent = 'Remove';
+                        removeButton.style.position = 'absolute';
+                        removeButton.style.top = '5px';
+                        removeButton.style.right = '5px';
+                        removeButton.classList.add('btn', 'btn-danger', 'btn-sm');
+
+                        removeButton.addEventListener('click', function() {
+                            croppedImagesContainer.removeChild(imgWrapper);
+                        });
+
+                        imgWrapper.appendChild(croppedImg);
+                        imgWrapper.appendChild(removeButton);
+                        croppedImagesContainer.appendChild(imgWrapper);
+
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'cropped_images[]';
+                        input.value = base64data;  // Set the Base64 string as the input value
+                        croppedImagesContainer.appendChild(input);
+
+                        cropper.destroy();
+                        cropImage(index + 1);  // Move to the next image
+                    };
+                    reader.readAsDataURL(blob);  // Converts the blob to a Base64 data URL
+                }, 'image/jpeg'); 
+            } else {
+                console.error('Cropper is not initialized for this image:', img);
+                cropImage(index + 1); 
+            }
+        }
+
+        cropImage(0); 
+    }
+
+    document.getElementById('resetButton').addEventListener('click', function() {
+        imagePreviewsContainer.innerHTML = '';  // Clear all image previews
+        croppedImagesContainer.innerHTML = '';  // Clear all cropped images
+
+        document.getElementById('postImages').value = ''; // Reset file input
+        document.getElementById('imagePreviewContainer').style.display = 'none';
+
+        document.getElementById('cropButton').removeEventListener('click', cropImages);
+    });
+});
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    let page = 2;
+    let loading = false;
+    let hasMorePosts = true;
+    let isRelated = false;
+
+    function loadMorePosts() {
+        if (loading || !hasMorePosts) return;
+        loading = true;
+        const query = new URLSearchParams(window.location.search).get('q') || '';
+        
+        const url = `/?page=${page}&q=${encodeURIComponent(query)}&related=${isRelated ? 'true' : 'false'}`;
+        
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                const container = document.getElementById('post-container');
+                const loadingElement = document.getElementById('loading');
+                loadingElement.style.display = 'none';
+
+                const newPosts = new DOMParser().parseFromString(html, 'text/html').querySelector('#post-container').innerHTML;
+                
+                if (newPosts.trim() === '') {
+                    hasMorePosts = false;
+                    return;
+                }
+                
+                container.insertAdjacentHTML('beforeend', newPosts);
+
+                loading = false;
+                page += 1;
+            })
+            .catch(() => {
+                loading = false;
+            });
+    }
+
+    function handleScroll() {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+            document.getElementById('loading').style.display = 'block';
+            isRelated = true;
+            hasMorePosts = true;
+            loadMorePosts();
+        }
+    }
+
+    window.addEventListener('scroll', handleScroll);
+
+    document.getElementById('search-button-main').addEventListener('click', () => {
+        const query = document.getElementById('search-input').value.trim();
+        window.location.search = `?q=${encodeURIComponent(query)}&page=1`;
+        page = 1;
+        hasMorePosts = true;
+        isRelated = false;
+        document.getElementById('post-container').innerHTML = ''; 
+        loadMorePosts();
+    });
+
+    // Assuming a button or event to start showing related posts
+    document.getElementById('show-related-button').addEventListener('click', () => {
+        page = 1;
+        hasMorePosts = true;
+        isRelated = true;
+        document.getElementById('post-container').innerHTML = '';
+        loadMorePosts();
+    });
+});
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    let page = 2;
+    let loading = false;
+    let hasMorePosts = true;
+    let isRelated = false;
+
+    function loadMorePosts() {
+        if (loading || !hasMorePosts) return;
+        loading = true;
+        const query = new URLSearchParams(window.location.search).get('q') || '';
+        
+        const url = `/?page=${page}&q=${encodeURIComponent(query)}&related=${isRelated ? 'true' : 'false'}`;
+        
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                const container = document.getElementById('post-container');
+                const loadingElement = document.getElementById('loading');
+                loadingElement.style.display = 'none';
+
+                const newPosts = new DOMParser().parseFromString(html, 'text/html').querySelector('#post-container').innerHTML;
+                
+                if (newPosts.trim() === '') {
+                    hasMorePosts = false;
+                    return;
+                }
+                
+                container.insertAdjacentHTML('beforeend', newPosts);
+
+                loading = false;
+                page += 1;
+            })
+            .catch(() => {
+                loading = false;
+            });
+    }
+
+    function handleScroll() {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+            document.getElementById('loading').style.display = 'block';
+            isRelated = true;
+            hasMorePosts = true;
+            loadMorePosts();
+        }
+    }
+
+    window.addEventListener('scroll', handleScroll);
+
+    document.getElementById('search-button').addEventListener('click', () => {
+        const query = document.getElementById('search-input').value.trim();
+        window.location.search = `?q=${encodeURIComponent(query)}&page=1`;
+        page = 1;
+        hasMorePosts = true;
+        isRelated = false;
+        document.getElementById('post-container').innerHTML = ''; 
+        loadMorePosts();
+    });
+
+    // Assuming a button or event to start showing related posts
+    document.getElementById('show-related-button').addEventListener('click', () => {
+        page = 1;
+        hasMorePosts = true;
+        isRelated = true;
+        document.getElementById('post-container').innerHTML = '';
+        loadMorePosts();
+    });
+});
+
+
+</script>
