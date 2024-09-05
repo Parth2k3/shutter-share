@@ -13,6 +13,8 @@ from user_app.models import User
 import cloudinary.uploader
 from cloudinary.uploader import destroy
 from django.core.paginator import Paginator
+from .tasks import create_post_task
+
 
 class IndexView(APIView):
     permission_classes = [CustomIsAuthenticated]
@@ -96,6 +98,9 @@ class CreatePostView(APIView):
                     creator=request.user
                 )
                 post.images.add(image_instance)
+
+        # create_post_task.delay(posted_data, user_id, uploaded_image_urls)
+
 
         for tag in posted_data.getlist('tags[]'):
             topic, created = Topic.objects.get_or_create(post=post)

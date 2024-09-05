@@ -164,3 +164,8 @@ CSRF_TRUSTED_ORIGINS = [
     'http://shuttershare.up.railway.app',
 
 ]
+
+# Celery settings
+# CELERY_BROKER_URL = 'redis://localhost:6379/0'  # URL of your Redis server
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_TASK_SERIALIZER = 'json'

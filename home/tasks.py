@@ -1,8 +1,9 @@
-from background_task import background
+# app/tasks.py
+from celery import shared_task
 from django.contrib.auth import get_user_model
 from .models import Posts  # Import your Post model
 
-@background(schedule=0)
+@shared_task
 def create_post_task(posted_data, user_id, uploaded_image_urls):
     User = get_user_model()
     user = User.objects.get(id=user_id)
@@ -17,7 +18,6 @@ def create_post_task(posted_data, user_id, uploaded_image_urls):
 
     # Add tags to the post
     for tag in posted_data['tags']:
-        # Assuming you have a Tag model or similar setup
         post.tags.add(tag)
 
     # Add images to the post
