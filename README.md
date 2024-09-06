@@ -7,6 +7,7 @@ Shutter-Share is a project built for sharing and managing photos through posts w
 <b>Photo Sharing</b> : Upload and share photos by creating a post:- adding title, description, tags and privacy. Creating a post automatically creates a 'comparing' link which can be used to vote the post's images.<br><br>
 <b>Profile Management</b> : Users can manage their profile and photo albums.<br><br>
 <b>Search</b> : The website uses a Vector database (pinecone) to store and fetch vector embeddings for posts which is used to get related and recommended posts.<br><br>
+<b>Multi-Tasking</b> : Celery and Redis is being used to run the upload post function in the background since it is time consuming, smoothens the flow.<br><br>
 <b>Followers</b> : Users can use the following/followers button to follow each other and manage them in followers tab.<br><br>
 <b>Notifications</b> : Recent notifications are visible on the home screen on the desktop version which is linked to the target post/user.<br><br>
 <b>Responsive UI</b>: Mobile-friendly interface.<br><br>
